@@ -12,7 +12,7 @@ execução de obra sem aprovação explícita.
 
 ## Fonte de verdade e persistência local
 
-- As planilhas em `Excel/` são a fonte de verdade dos valores orçados e são
+- As planilhas em `excel/` são a fonte de verdade dos valores orçados e são
   apenas de leitura.
 - `data/contratos.json` é o cadastro persistente local dos metadados; não
   contém valores substitutos do orçamento.
@@ -31,12 +31,41 @@ execução de obra sem aprovação explícita.
 - A aba `Dados` é o formato legado aceito.
 - A aba `CPU`, quando existir, complementa a composição dos itens em Mão de
   Obra, Equipamentos e Materiais.
+- A CPU pode cobrir somente parte dos itens. Preserve o item sem CPU no total
+  e na hierarquia e marque sua composição com `SEM_CPU`.
+- Arquivos reais trazem outras abas (`F. Rosto`, `CMS`, `MC ...`, `MO`,
+  `Equip`, `BDI`, `BDI-ADM LOCAL`, `ES` etc.). Ignorar tudo que não casar com
+  QQP/LD/Dados/CPU — nunca tratar `MC ...` (memória de cálculo) ou `CMS`
+  (critério de medição) como orçamento.
 - Descobrir cabeçalhos pelo texto das células, não por índices fixos de
-  coluna.
+  coluna; o cabeçalho da QQP/LD pode ocupar duas linhas mescladas.
+- Distinguir linha de item (código hierárquico + total), linha de grupo
+  (código sem total) e linha de subtotal/total (total sem código) pela
+  combinação desses dois campos, não só pela presença de valor.
+- A CPU normalmente não é tabular: é uma sequência de blocos por item,
+  delimitados por linhas `SERVIÇO:`/`ITEM:`, com subseções `MÃO DE OBRA`,
+  `EQUIPAMENTOS` e `MATERIAIS` e um `BDI` final em valor absoluto (não
+  alíquota). Associar cada bloco ao item da QQP/LD pelo código lido na linha
+  `ITEM:`, nunca pela posição da linha. Ver seção 3.1 do design doc para o
+  formato completo e a fórmula de redistribuição do BDI.
+- Quando as colunas de Área/SubÁrea da QQP vierem vazias (comum em arquivos
+  reais), derivar `area` do grupo de nível superior mais próximo no código
+  hierárquico, em vez de exigir a coluna preenchida.
 - Normalizar toda fonte antes da camada visual. Cada item contém `code`,
   `name`, `planned`, `unit`, `qty`, `area` e `breakdown`.
 - Use `Decimal` para cálculos monetários. Preserve divergências QQP/LD × CPU
   como avisos explícitos; nunca altere silenciosamente valores de origem.
+
+## Stack técnico
+
+- Python 3.11+, `openpyxl` (com `data_only=True`) para leitura de planilhas;
+  não usar `pandas` na leitura, pois converte valores para `float`.
+- UI em HTML renderizado no servidor (Flask + Jinja2), sem framework de
+  frontend/SPA nem build step. Gráficos via Chart.js carregado por `<script>`.
+- Gravação de `data/contratos.json` com escrita atômica da biblioteca padrão
+  (`tempfile` + `os.replace`), sem banco de dados.
+- Testes com `pytest`, mantendo leitores testáveis isoladamente da camada
+  web. Ver seção 11 do design doc para a estrutura de pastas proposta.
 
 ## Dashboard
 
@@ -68,7 +97,11 @@ de comparação.
 
 ## Validação obrigatória
 
-- Leitores: QQP, LD, Dados, CPU ausente e divergência CPU × orçamento.
+- Leitores: QQP, LD, Dados, CPU ausente, CPU parcial e divergência CPU ×
+  orçamento.
+- Referência em `excel/Anexo_I_-_PQ-8001PZ-G-11007_Rev.ALT_REV08 (1).xlsx`:
+  validar 51 linhas de orçamento, 50 vínculos CPU e `SEM_CPU` no item `6.1.1`,
+  sem codificar valores ou posições fixas dessa fonte.
 - Cadastro: gravação atômica, reabertura, preservação dos metadados e arquivo
   alterado.
 - Curva S: total final igual ao valor orçado, período igual à duração e soma

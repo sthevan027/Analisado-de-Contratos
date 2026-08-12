@@ -15,7 +15,7 @@ medição, tickets, histórico operacional ou avanço físico.
 
 ## Fluxo de uso previsto
 
-1. Coloque as planilhas dos contratos na pasta `Excel/`.
+1. Coloque as planilhas dos contratos na pasta `excel/`.
 2. Abra a tela **Contratos** para visualizar os arquivos identificados.
 3. Selecione um contrato e informe uma única vez: nome, cliente, obra, data
    de início e duração em meses.
@@ -36,6 +36,18 @@ medição, tickets, histórico operacional ou avanço físico.
 O sistema deve reconhecer o formato pelas abas, e não pelo nome do arquivo.
 Arquivos temporários do Excel, iniciados por `~$`, devem ser ignorados.
 
+## Stack
+
+- **Python 3.11+** para leitura, normalização e cálculos financeiros com
+  `Decimal`.
+- **Flask + Jinja2** no backend local e na renderização das telas.
+- **HTML e CSS** para a UI; JavaScript simples apenas para interações e
+  gráficos, sem SPA ou etapa de build.
+- **Chart.js** para os gráficos de composição e da Curva S.
+- **JSON local** em `data/contratos.json` para o cadastro persistente.
+
+Não haverá banco externo, serviço externo ou frontend separado no MVP.
+
 ## Dashboard planejado
 
 - KPIs: valor total orçado, início, prazo e quantidade de itens/grupos.
@@ -49,6 +61,22 @@ Arquivos temporários do Excel, iniciados por `~$`, devem ser ignorados.
 
 A Curva S é uma referência financeira planejada. Ela não representa medição,
 custo realizado, avanço físico ou cronograma formal.
+
+## Orçamento de referência analisado
+
+A planilha em
+`excel/Anexo_I_-_PQ-8001PZ-G-11007_Rev.ALT_REV08 (1).xlsx` contém `QQP` e
+`CPU`, além de abas auxiliares (`MO`, `Equip`, `BDI` e outras). A análise
+confirmou a necessidade de suportar:
+
+- cabeçalho da QQP em múltiplas linhas;
+- itens hierárquicos e linhas de grupo sem valor próprio;
+- CPU em blocos por item, e não em uma tabela única;
+- composição parcial: foram encontradas 51 linhas orçamentárias e 50 blocos
+  de CPU; o item `6.1.1` permanece no total, porém sem composição disponível.
+
+Esta planilha é uma referência de compatibilidade. O leitor não deve
+codificar posições de linha, nomes de arquivo ou valores específicos dela.
 
 ## Persistência do cadastro
 
@@ -79,6 +107,7 @@ cadastro deve permitir essa expansão sem que ela seja implementada agora.
 
 ## Status atual
 
-Este repositório contém a especificação do produto. A implementação do leitor
-de Excel, da persistência e do dashboard ainda será iniciada a partir desta
-documentação.
+Este repositório contém a especificação do produto e um exemplo real de
+planilha em `excel/`, usado para validar o formato QQP/CPU descrito na
+documentação. A implementação do leitor de Excel, da persistência e do
+dashboard ainda será iniciada a partir desta documentação.
