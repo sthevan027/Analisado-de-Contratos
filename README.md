@@ -100,6 +100,18 @@ aplicação deve pedir apenas uma revisão — não todo o preenchimento novamen
 A comparação entre poucos contratos é uma evolução futura; a estrutura de
 cadastro deve permitir essa expansão sem que ela seja implementada agora.
 
+## Como executar localmente
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+python app.py
+```
+
+A aplicação sobe em `http://127.0.0.1:5000/`. Abra `/contratos`, cadastre uma
+planilha da pasta `excel/` e acesse `/dashboard`.
+
 ## Documentação
 
 - [Lógica e design do produto](Docs/logica-e-design-visao-geral-contrato.md)
@@ -107,7 +119,8 @@ cadastro deve permitir essa expansão sem que ela seja implementada agora.
 
 ## Status atual
 
-Este repositório contém a especificação do produto e um exemplo real de
-planilha em `excel/`, usado para validar o formato QQP/CPU descrito na
-documentação. A implementação do leitor de Excel, da persistência e do
-dashboard ainda será iniciada a partir desta documentação.
+O MVP está implementado: leitores de QQP/LD, Dados e CPU, cadastro
+persistente em `data/contratos.json` e o dashboard orçamentário em Flask.
+A suíte de testes cobre o domínio, os leitores, o armazenamento, os serviços
+financeiros, a camada web e a compatibilidade com a planilha de referência em
+`excel/`.
