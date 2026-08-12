@@ -163,9 +163,7 @@ def create_app(config: dict | None = None) -> Flask:
         inicio = date.fromisoformat(registro["inicio"])
         curva = gerar_curva_s(resumo["total_orcado"], inicio, registro["duracao_meses"])
 
-        dados_grafico = json.dumps(
-            {"composicaoCpu": resumo["composicao_cpu"], "curvaS": curva}, cls=_CodificadorJSON
-        )
+        dados_grafico = json.dumps({"curvaS": curva}, cls=_CodificadorJSON)
 
         return render_template(
             "dashboard.html", resumo=resumo, curva=curva, contrato=registro, dados_grafico=dados_grafico

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_macros.html" import badge_status_cpu %}
 
 {% block titulo %}Dashboard — {{ contrato.nome }}{% endblock %}
 
@@ -41,23 +42,52 @@
 
 {% if resumo.avisos %}
 <div class="alerta alerta-avisos">
-    <strong>Avisos de reconciliação:</strong>
-    <ul>
-        {% for aviso in resumo.avisos %}
-        <li>{{ aviso }}</li>
-        {% endfor %}
-    </ul>
+    <div>
+        <strong>Avisos de reconciliação</strong>
+        <ul>
+            {% for aviso in resumo.avisos %}
+            <li>{{ aviso }}</li>
+            {% endfor %}
+        </ul>
+    </div>
 </div>
 {% endif %}
 
 <section class="graficos">
     <div class="grafico-caixa">
         <h2>Composição de custo (CPU)</h2>
-        <canvas id="grafico-composicao"></canvas>
+        {% if resumo.composicao_cpu %}
+        <p class="grafico-legenda">Distribuição do valor com CPU validada entre mão de obra, equipamentos e materiais.</p>
+        <div class="barra-composicao" role="img" aria-label="Composição de custo: {% for parte in resumo.composicao_cpu %}{{ parte.grupo }} {{ parte.valor | moeda }}{{ ", " if not loop.last }}{% endfor %}">
+            {% for parte in resumo.composicao_cpu %}
+            <div class="segmento segmento-{{ loop.index }}" style="flex: {{ parte.valor }} 0 0;">
+                {{ parte.grupo }}
+            </div>
+            {% endfor %}
+        </div>
+        <ul class="legenda-composicao">
+            {% for parte in resumo.composicao_cpu %}
+            <li>
+                <span class="legenda-marca legenda-marca-{{ loop.index }}"></span>
+                {{ parte.grupo }} — <span class="legenda-valor">{{ parte.valor | moeda }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="estado-vazio">Nenhum item possui composição de CPU validada ainda.</p>
+        {% endif %}
     </div>
     <div class="grafico-caixa">
         <h2>Planejado (Curva S financeira)</h2>
-        <canvas id="grafico-curva-s"></canvas>
+        <p class="grafico-legenda">Distribuição financeira planejada ao longo da duração do contrato.</p>
+        <div class="grafico-canvas-caixa">
+            <canvas id="grafico-curva-s"></canvas>
+        </div>
+        {% if curva %}
+        <p class="grafico-rodape">
+            Encerra em {{ curva[-1].competencia }} com <strong>{{ curva[-1].acumulado | moeda }}</strong> acumulados.
+        </p>
+        {% endif %}
     </div>
 </section>
 
@@ -65,13 +95,13 @@
     <div>
         <h2>Grupos por valor</h2>
         <table class="tabela">
-            <thead><tr><th>Grupo</th><th>Itens</th><th>Valor</th></tr></thead>
+            <thead><tr><th>Grupo</th><th class="num">Itens</th><th class="num">Valor</th></tr></thead>
             <tbody>
                 {% for grupo in resumo.grupos %}
                 <tr>
                     <td>{{ grupo.nome }}</td>
-                    <td>{{ grupo.quantidade_itens }}</td>
-                    <td>{{ grupo.valor | moeda }}</td>
+                    <td class="num">{{ grupo.quantidade_itens }}</td>
+                    <td class="num">{{ grupo.valor | moeda }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -80,15 +110,14 @@
     <div>
         <h2>Itens de maior peso</h2>
         <table class="tabela">
-            <thead><tr><th>Código</th><th>Descrição</th><th>Área</th><th>Valor</th><th>CPU</th></tr></thead>
+            <thead><tr><th>Código</th><th>Descrição</th><th class="num">Valor</th><th>CPU</th></tr></thead>
             <tbody>
                 {% for item in resumo.itens_maior_peso %}
                 <tr>
                     <td>{{ item.codigo }}</td>
                     <td>{{ item.descricao }}</td>
-                    <td>{{ item.area }}</td>
-                    <td>{{ item.valor | moeda }}</td>
-                    <td>{{ item.status_cpu.value }}</td>
+                    <td class="num">{{ item.valor | moeda }}</td>
+                    <td>{{ badge_status_cpu(item.status_cpu) }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

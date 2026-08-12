@@ -4,42 +4,46 @@
 
 {% block conteudo %}
 <h1>Contratos</h1>
+<p class="subtitulo">Planilhas identificadas em <code>excel/</code> e seus cadastros.</p>
 
-<table class="tabela">
-    <thead>
-        <tr>
-            <th>Arquivo</th>
-            <th>Formato</th>
-            <th>Contrato cadastrado</th>
-            <th>Início</th>
-            <th>Duração</th>
-            <th>Situação</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for item in arquivos %}
-        <tr class="{{ 'linha-ativa' if item.ativo else '' }}">
-            <td>{{ item.nome_arquivo }}</td>
-            <td>{{ item.formato.value }}</td>
-            <td>{{ item.registro.nome if item.registro else "—" }}</td>
-            <td>{{ item.registro.inicio if item.registro else "—" }}</td>
-            <td>{{ item.registro.duracao_meses if item.registro else "—" }} meses</td>
-            <td>
-                {% if item.ativo %}<span class="etiqueta etiqueta-ativa">Ativo</span>{% endif %}
-                {% if item.fonte_alterada %}<span class="etiqueta etiqueta-alerta">Planilha alterada</span>{% endif %}
-            </td>
-            <td>
-                {% if item.registro and not item.ativo %}
-                <form method="post" action="{{ url_for('selecionar_contrato_ativo', contrato_id=item.registro.id) }}">
-                    <button type="submit">Selecionar</button>
-                </form>
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="tabela-caixa">
+    <table class="tabela">
+        <thead>
+            <tr>
+                <th>Arquivo</th>
+                <th>Formato</th>
+                <th>Contrato cadastrado</th>
+                <th>Início</th>
+                <th>Duração</th>
+                <th>Situação</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in arquivos %}
+            <tr class="{{ 'linha-ativa' if item.ativo else '' }}">
+                <td>{{ item.nome_arquivo }}</td>
+                <td>{{ item.formato.value | upper }}</td>
+                <td>{{ item.registro.nome if item.registro else "—" }}</td>
+                <td>{{ item.registro.inicio if item.registro else "—" }}</td>
+                <td>{{ item.registro.duracao_meses ~ " meses" if item.registro else "—" }}</td>
+                <td>
+                    {% if item.ativo %}<span class="selo selo-boa"><span class="selo-marca"></span>Ativo</span>{% endif %}
+                    {% if item.fonte_alterada %}<span class="selo selo-alerta"><span class="selo-marca"></span>Planilha alterada</span>{% endif %}
+                    {% if not item.registro %}<span class="selo selo-neutra"><span class="selo-marca"></span>Não cadastrado</span>{% endif %}
+                </td>
+                <td>
+                    {% if item.registro and not item.ativo %}
+                    <form method="post" action="{{ url_for('selecionar_contrato_ativo', contrato_id=item.registro.id) }}">
+                        <button type="submit">Selecionar</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 
 <h2>Cadastrar contrato</h2>
 <form method="post" action="{{ url_for('cadastrar_contrato') }}" class="formulario">

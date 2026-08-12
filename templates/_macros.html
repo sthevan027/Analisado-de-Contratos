@@ -1,0 +1,9 @@
+{% macro badge_status_cpu(status) %}
+    {%- if status.value == "validado_cpu" -%}
+        <span class="selo selo-boa"><span class="selo-marca"></span>Validado</span>
+    {%- elif status.value == "divergente_cpu" -%}
+        <span class="selo selo-alerta"><span class="selo-marca"></span>Divergente</span>
+    {%- else -%}
+        <span class="selo selo-neutra"><span class="selo-marca"></span>Sem CPU</span>
+    {%- endif -%}
+{% endmacro %}
