@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block titulo %}Contratos — Analisador de Contratos{% endblock %}
+
+{% block conteudo %}
+<h1>Contratos</h1>
+
+<table class="tabela">
+    <thead>
+        <tr>
+            <th>Arquivo</th>
+            <th>Formato</th>
+            <th>Contrato cadastrado</th>
+            <th>Início</th>
+            <th>Duração</th>
+            <th>Situação</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in arquivos %}
+        <tr class="{{ 'linha-ativa' if item.ativo else '' }}">
+            <td>{{ item.nome_arquivo }}</td>
+            <td>{{ item.formato.value }}</td>
+            <td>{{ item.registro.nome if item.registro else "—" }}</td>
+            <td>{{ item.registro.inicio if item.registro else "—" }}</td>
+            <td>{{ item.registro.duracao_meses if item.registro else "—" }} meses</td>
+            <td>
+                {% if item.ativo %}<span class="etiqueta etiqueta-ativa">Ativo</span>{% endif %}
+                {% if item.fonte_alterada %}<span class="etiqueta etiqueta-alerta">Planilha alterada</span>{% endif %}
+            </td>
+            <td>
+                {% if item.registro and not item.ativo %}
+                <form method="post" action="{{ url_for('selecionar_contrato_ativo', contrato_id=item.registro.id) }}">
+                    <button type="submit">Selecionar</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>Cadastrar contrato</h2>
+<form method="post" action="{{ url_for('cadastrar_contrato') }}" class="formulario">
+    <label>
+        Arquivo
+        <select name="arquivo" required>
+            {% for item in arquivos %}
+            <option value="{{ item.nome_arquivo }}">{{ item.nome_arquivo }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <label>
+        Nome do contrato
+        <input type="text" name="nome" required>
+    </label>
+    <label>
+        Cliente
+        <input type="text" name="cliente" required>
+    </label>
+    <label>
+        Obra
+        <input type="text" name="obra" required>
+    </label>
+    <label>
+        Início
+        <input type="date" name="inicio" required>
+    </label>
+    <label>
+        Duração (meses)
+        <input type="number" name="duracao_meses" min="1" step="1" required>
+    </label>
+    <button type="submit">Cadastrar e selecionar</button>
+</form>
+{% endblock %}

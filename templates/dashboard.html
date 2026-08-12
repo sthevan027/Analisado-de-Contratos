@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block titulo %}Dashboard — {{ contrato.nome }}{% endblock %}
+
+{% block conteudo %}
+<h1>Dashboard orçamentário — {{ contrato.nome }}</h1>
+<p class="subtitulo">{{ contrato.cliente }} · {{ contrato.obra }}</p>
+
+<section class="kpis">
+    <div class="kpi">
+        <span class="kpi-rotulo">Valor orçado</span>
+        <span class="kpi-valor">{{ resumo.total_orcado | moeda }}</span>
+    </div>
+    <div class="kpi">
+        <span class="kpi-rotulo">Valor com CPU validado</span>
+        <span class="kpi-valor">{{ resumo.valor_com_cpu | moeda }}</span>
+    </div>
+    <div class="kpi">
+        <span class="kpi-rotulo">Valor sem CPU</span>
+        <span class="kpi-valor">{{ resumo.valor_sem_cpu | moeda }}</span>
+    </div>
+    <div class="kpi">
+        <span class="kpi-rotulo">Cobertura de CPU</span>
+        <span class="kpi-valor">{{ resumo.cobertura_cpu_pct }}%</span>
+    </div>
+    <div class="kpi">
+        <span class="kpi-rotulo">Itens</span>
+        <span class="kpi-valor">{{ resumo.quantidade_itens }}</span>
+    </div>
+    <div class="kpi">
+        <span class="kpi-rotulo">Grupos</span>
+        <span class="kpi-valor">{{ resumo.quantidade_grupos }}</span>
+    </div>
+</section>
+
+{% if resumo.valor_sem_cpu > 0 %}
+<div class="alerta">
+    Há {{ resumo.valor_sem_cpu | moeda }} em itens sem composição de CPU validada.
+</div>
+{% endif %}
+
+{% if resumo.avisos %}
+<div class="alerta alerta-avisos">
+    <strong>Avisos de reconciliação:</strong>
+    <ul>
+        {% for aviso in resumo.avisos %}
+        <li>{{ aviso }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<section class="graficos">
+    <div class="grafico-caixa">
+        <h2>Composição de custo (CPU)</h2>
+        <canvas id="grafico-composicao"></canvas>
+    </div>
+    <div class="grafico-caixa">
+        <h2>Planejado (Curva S financeira)</h2>
+        <canvas id="grafico-curva-s"></canvas>
+    </div>
+</section>
+
+<section class="tabelas">
+    <div>
+        <h2>Grupos por valor</h2>
+        <table class="tabela">
+            <thead><tr><th>Grupo</th><th>Itens</th><th>Valor</th></tr></thead>
+            <tbody>
+                {% for grupo in resumo.grupos %}
+                <tr>
+                    <td>{{ grupo.nome }}</td>
+                    <td>{{ grupo.quantidade_itens }}</td>
+                    <td>{{ grupo.valor | moeda }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div>
+        <h2>Itens de maior peso</h2>
+        <table class="tabela">
+            <thead><tr><th>Código</th><th>Descrição</th><th>Área</th><th>Valor</th><th>CPU</th></tr></thead>
+            <tbody>
+                {% for item in resumo.itens_maior_peso %}
+                <tr>
+                    <td>{{ item.codigo }}</td>
+                    <td>{{ item.descricao }}</td>
+                    <td>{{ item.area }}</td>
+                    <td>{{ item.valor | moeda }}</td>
+                    <td>{{ item.status_cpu.value }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<script id="dados-dashboard" type="application/json">{{ dados_grafico | safe }}</script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
